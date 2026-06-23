@@ -21,3 +21,7 @@ left :: proc() -> bool {
 shoot :: proc() -> bool {
     return rl.IsKeyPressed(.SPACE)
 }
+
+restart :: proc() -> bool {
+    return rl.IsKeyPressed(.ENTER)
+}
