@@ -104,7 +104,7 @@ move_player :: proc(delta: f32) {
 }
 
 move_enemies :: proc(delta: f32) {
-    #reverse for &enemy, i in state.enemy_pos {
+    #reverse for &enemy in state.enemy_pos {
         enemy.y += constant.ENEMY_SPEED * delta
 
         if enemy.y >= f32(constant.SCREEN_SIZE.y) - constant.ENEMY_SIZE.y {
@@ -245,7 +245,7 @@ render :: proc() {
 }
 
 draw_enemies :: proc() {
-    for &enemy, i in state.enemy_pos {
+    for &enemy in state.enemy_pos {
         rl.DrawRectangleV(enemy, constant.ENEMY_SIZE, rl.RED)
     }
 }
@@ -255,7 +255,7 @@ draw_player :: proc() {
 }
 
 draw_bullets :: proc() {
-    for &bullet, i in state.bullet_pos {
+    for &bullet in state.bullet_pos {
         rl.DrawRectangleV(bullet, {constant.BULLET_SIZE.x, constant.BULLET_SIZE.y + constant.BULLET_SPEED * constant.TICK_TD}, rl.YELLOW)
         rl.DrawRectangleV(bullet, constant.BULLET_SIZE, rl.RED)
     }
@@ -298,8 +298,6 @@ draw_score :: proc() {
 
     rl.DrawText(score_msg, x, y, size, rl.WHITE)
 
-
-    elapsed_seconds := f32(state.tick) * constant.TICK_TD
 
     total := state.tick / constant.TICK_RATE   // whole seconds (i32)
     mins  := total / 60
