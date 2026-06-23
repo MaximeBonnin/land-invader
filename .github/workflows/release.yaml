@@ -1,0 +1,36 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write          # needed to create the release
+
+jobs:
+  release:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            out: land-invaders-linux
+          - os: windows-latest
+            out: land-invaders.exe
+          - os: macos-latest
+            out: land-invaders-macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y
+          libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev
+          libxcursor-dev libxi-dev libxext-dev
+
+      - run: odin build . -out:${{ matrix.out }} -o:speed
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.out }}
