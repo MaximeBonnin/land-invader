@@ -1,4 +1,4 @@
-package constant;
+package constant
 
 import rl "vendor:raylib"
 
@@ -23,7 +23,7 @@ ENEMY_SHOOT_DELAY :: 90 // in ticks
 
 owner :: enum {
     PLAYER,
-    ENEMY
+    ENEMY,
 }
 
 TUTORIAL_MESSAGE : cstring : "Use WASD or Arrow Keys to move.\nUse Space to shoot."

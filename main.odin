@@ -1,4 +1,4 @@
-package main;
+package main
 
 import rl "vendor:raylib"
 import "core:fmt"
@@ -19,7 +19,7 @@ State :: struct {
     enemy_hp: [dynamic]i32,
     bullet_pos: [dynamic]rl.Vector2, 
     bullet_dir: [dynamic]constant.owner,
-    score: i64
+    score: i64,
 }
 
 
