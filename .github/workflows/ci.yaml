@@ -15,7 +15,7 @@ jobs:
           release: latest                       # or: nightly
       - run: odin check game -vet -strict-style -collection:http=game/libs/odin-http
 
-  check-odin:
+  check-go:
     runs-on: ubuntu-latest
     steps:
           runs-on: ubuntu-latest
