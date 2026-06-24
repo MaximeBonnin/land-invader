@@ -13,4 +13,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}   # required to pull GitHub releases
           release: latest                       # or: nightly
-      - run: odin check . -vet -strict-style
+      - run: odin check game -vet -strict-style
