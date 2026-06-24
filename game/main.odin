@@ -5,6 +5,7 @@ import "core:fmt"
 import "core:math/rand"
 import "input"
 import "constant"
+import "scoreboard"
 
 frame_collector: f32
 show_tutorial:= true
@@ -26,6 +27,8 @@ State :: struct {
 main :: proc() {
     rl.InitWindow(constant.SCREEN_SIZE.x, constant.SCREEN_SIZE.y, "Land Invaders")
     init()
+
+    scoreboard.get()
 
     for !rl.WindowShouldClose() {
         free_all(context.temp_allocator)
