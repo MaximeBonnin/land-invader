@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  check:
+  check-odin:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -13,4 +13,16 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}   # required to pull GitHub releases
           release: latest                       # or: nightly
-      - run: odin check game -vet -strict-style
+      - run: odin check game -vet -strict-style -collection:http=game/libs/odin-http
+
+  check-odin:
+    runs-on: ubuntu-latest
+    steps:
+          runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.3"
+      - run: go vet ./...
+      - run: go test ./...

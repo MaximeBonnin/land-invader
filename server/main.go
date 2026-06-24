@@ -81,7 +81,7 @@ func getScore(db *sql.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(scores)
-		slog.Debug(fmt.Sprintf("%s", scores))
+		slog.Debug(fmt.Sprintf("%v", scores))
 	}
 }
 
