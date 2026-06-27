@@ -19,11 +19,12 @@ type config struct {
 }
 
 type score struct {
-	id        int
-	score     int
-	name      string
-	timestamp int
-	time      string
+	Id        int    `json:"id"`
+	Score     int    `json:"score"`
+	Name      string `json:"name"`
+	Timestamp int    `json:"timestamp"`
+	Time      string `json:"time"`
+	Version   string `json:"version"`
 }
 
 func main() {
@@ -58,7 +59,8 @@ func main() {
 func getScore(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		slog.Debug("Get Score")
-		rows, err := db.Query("SELECT id, score, name, timestamp, time FROM score")
+		// TODO: Add version filter as param
+		rows, err := db.Query("SELECT id, score, name, timestamp, time, version FROM score")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -68,7 +70,7 @@ func getScore(db *sql.DB) http.HandlerFunc {
 		scores := []score{}
 		for rows.Next() {
 			var s score
-			if err := rows.Scan(&s.id, &s.score, &s.name, &s.timestamp, &s.time); err != nil {
+			if err := rows.Scan(&s.Id, &s.Score, &s.Name, &s.Timestamp, &s.Time, &s.Version); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -86,14 +88,33 @@ func getScore(db *sql.DB) http.HandlerFunc {
 }
 
 func addScore(db *sql.DB) http.HandlerFunc {
-	// FIXME this is broken
-	score := score{}
+	slog.Debug("Post Score")
+	score := score{
+		Score:     1,
+		Name:      "test",
+		Timestamp: 1,
+		Time:      "1",
+		Version:   "0.1.0",
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := db.Exec("INSERT INTO score (score, name, timestamp, time) VALUES (?, ?, ?, ?)", score.score, score.name, score.timestamp, score.time)
+		rows, err := db.Exec("INSERT INTO score (score, name, timestamp, time, version) VALUES (?, ?, ?, ?, ?)", score.Score, score.Name, score.Timestamp, score.Time, score.Version)
 		if err != nil {
 			slog.Error(err.Error())
 			http.Error(w, err.Error(), 500)
 		}
-		log.Default().Println(rows)
+
+		effected, err := rows.RowsAffected()
+		if err != nil {
+			slog.Error(err.Error())
+			http.Error(w, err.Error(), 500)
+		}
+
+		lastId, err := rows.LastInsertId()
+		if err != nil {
+			slog.Error(err.Error())
+			http.Error(w, err.Error(), 500)
+		}
+
+		slog.Debug("Inserted", "row effected", effected, "id", lastId)
 	}
 }
