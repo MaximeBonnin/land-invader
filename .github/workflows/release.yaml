@@ -16,7 +16,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}   # required to pull GitHub releases
           release: latest                       # or: nightly
       - run: odin check game -vet -strict-style -collection:http=game/libs/odin-http
-
   release-odin:
     needs: check-odin
     strategy:
@@ -40,7 +39,7 @@ jobs:
           libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev
           libxcursor-dev libxi-dev libxext-dev
 
-      - run: odin build game -out:${{ matrix.out }} -o:speed -collection:http=game/libs/odin-http
+      - run: odin build game -out:${{ matrix.out }} -o:speed -collection:http=game/libs/odin-http -define:SERVER_URL="https://land-invader-854518063267.europe-west4.run.app"
 
       - uses: softprops/action-gh-release@v2
         with:

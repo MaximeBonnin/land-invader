@@ -2,8 +2,8 @@ package scoreboard
 
 import "core:fmt"
 import "http:client"
-import "core:os"
 import "../error"
+import "../constant"
 import "core:encoding/json"
 
 Score :: struct {
@@ -21,13 +21,7 @@ Scoreboard :: [dynamic]Score
 get :: proc() -> (board: Scoreboard, getErr: error.Error) {
 	board = Scoreboard{}
 
-	url, found := os.lookup_env_alloc("SERVER_URL", context.temp_allocator)
-	if !found {
-		fmt.printf("Failed to find server url")
-		return board, .No_Server_URL
-	}
-
-	res, err := client.get(fmt.tprintf("%s/api/v1/score", url))
+	res, err := client.get(fmt.tprintf("%s/api/v1/score", constant.SERVER_URL))
 	if err != nil {
 		fmt.printf("Request failed: %s", err)
 		return board, .Request_Failed
@@ -61,12 +55,6 @@ Post_Body :: struct {
 post :: proc(payload: Score) -> (board: Scoreboard, getErr: error.Error) {
 	board = Scoreboard{}
 
-	url, found := os.lookup_env_alloc("SERVER_URL", context.temp_allocator)
-	if !found {
-		fmt.printf("Failed to find server url")
-		return board, .No_Server_URL
-	}
-
 	req: client.Request
 	client.request_init(&req, .Post)
 	defer client.request_destroy(&req)
@@ -76,7 +64,7 @@ post :: proc(payload: Score) -> (board: Scoreboard, getErr: error.Error) {
 		return board, .Bad_JSON
 	}
 
-	res, err := client.request(&req, fmt.tprintf("%s/api/v1/score", url))
+	res, err := client.request(&req, fmt.tprintf("%s/api/v1/score", constant.SERVER_URL))
 	if err != nil {
 		fmt.printf("Request failed: %s", err)
 		return board, .Request_Failed

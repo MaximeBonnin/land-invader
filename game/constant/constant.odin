@@ -21,6 +21,8 @@ ENEMY_BASE_HP :: 5
 ENEMY_SPAWN_DELAY :: 5 * 60 // in ticks
 ENEMY_SHOOT_DELAY :: 90 // in ticks
 
+SERVER_URL :: #config(SERVER_URL, "http://localhost:8080")
+
 owner :: enum {
     PLAYER,
     ENEMY,
