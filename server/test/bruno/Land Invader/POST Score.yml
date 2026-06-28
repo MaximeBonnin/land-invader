@@ -6,6 +6,13 @@ info:
 http:
   method: POST
   url: localhost:8080/api/v1/score
+  body:
+    type: json
+    data: |-
+      {
+        "score": 3,
+        "name": "test"
+      }
   auth: inherit
 
 settings:
