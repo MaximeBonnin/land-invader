@@ -84,5 +84,12 @@ post :: proc(payload: Score) -> (board: Scoreboard, getErr: error.Error) {
 
 	fmt.println(body)
 
-	return
+    text := body.(string)    
+	fmt.printf("Parsing: %s", text)
+	if jerr := json.unmarshal_string(text, &board); jerr != nil {
+		fmt.printfln("JSON error: %v", jerr)   // %v, not %s — it's a union
+		return board, .Bad_JSON
+	}
+
+	return board, .None
 }

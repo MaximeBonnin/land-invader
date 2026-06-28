@@ -80,7 +80,13 @@ func getScore(db *sql.DB) http.HandlerFunc {
 
 func getScoresFromDB(db *sql.DB) ([]score, error) {
 	// TODO: Add version filter as param
-	rows, err := db.Query("SELECT id, MAX(score), name, timestamp, time, version FROM score GROUP BY name")
+	rows, err := db.Query(`
+		SELECT id, MAX(score), name, timestamp, time, version 
+		FROM score 
+		GROUP BY name
+		ORDER BY MAX(score) DESC
+		LIMIT 5
+	`)
 	if err != nil {
 		return nil, err
 	}

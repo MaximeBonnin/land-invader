@@ -23,5 +23,9 @@ shoot :: proc() -> bool {
 }
 
 restart :: proc() -> bool {
+    return rl.IsKeyPressed(.R)
+}
+
+send_score :: proc() -> bool {
     return rl.IsKeyPressed(.ENTER)
 }

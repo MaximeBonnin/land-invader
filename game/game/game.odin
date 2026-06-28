@@ -1,8 +1,10 @@
 package game
 
+import "vendor:sdl2/net"
 import rl "vendor:raylib"
 import "core:fmt"
 import "core:math/rand"
+import "core:strings"
 import "../input"
 import "../constant"
 import "../scoreboard"
@@ -11,6 +13,9 @@ import "../error"
 frame_collector: f32
 show_tutorial:= true
 game_over: bool
+name_buf: [32]u8
+name_len: int
+name_typable: bool
 state : State
 
 State :: struct {
@@ -45,6 +50,11 @@ main_loop :: proc() {
             render()
         } else {
 
+            if input.send_score() {
+                handle_send_score()
+            }
+
+            update_textbox()
             render_end()
             if input.restart() {
                 game_over = false
@@ -63,6 +73,7 @@ init :: proc() {
 
     state = State{}
     frame_collector = 0
+    name_typable = true
     state.player_pos = rl.Vector2{f32(constant.SCREEN_SIZE.x) / 2, f32(constant.SCREEN_SIZE.y) - constant.PLAYER_SIZE.y}
     state.player_hp = constant.PLAYER_HP
 }
@@ -125,12 +136,8 @@ move_enemies :: proc(delta: f32) {
 handle_game_over :: proc() {
     game_over = true
 
-    scoreboard.post(
-        scoreboard.Score{
-            name = "dev",
-            score = state.score,
-        },
-    )
+    // render once to hide blocking API call
+    render_end()
 
     // get score
     board, err := scoreboard.get()
@@ -183,10 +190,6 @@ move_bullets :: proc(delta: f32) {
                 }
             }
         }
-
-
-
-
         // cleanup
         if bullet.y < -constant.BULLET_SIZE.y || bullet.y > f32(constant.SCREEN_SIZE.y) do remove_bullet(i_bullet)
     }
@@ -244,10 +247,48 @@ new_enemy :: proc(pos: rl.Vector2) {
     append(&state.enemy_hp, constant.ENEMY_BASE_HP)
 }
 
+update_textbox :: proc() {
+    if !name_typable do return
+
+    // pull all characters typed this frame
+    for {
+        c := rl.GetCharPressed()
+        if c == 0 do break                      // queue empty
+        if c >= 32 && c < 128 && name_len < len(name_buf) {
+            name_buf[name_len] = u8(c)
+            name_len += 1
+        }
+    }
+
+    // backspace
+    if rl.IsKeyPressed(.BACKSPACE) && name_len > 0 {
+        name_len -= 1
+    }
+}
+
+handle_send_score :: proc() {
+    // ensure only one score is sent
+    if !name_typable do return
+    name_typable = false
+
+    // send score
+    board, err := scoreboard.post(
+        scoreboard.Score{
+            name = string(name_buf[:name_len]),
+            score = state.score,
+        },
+    )
+
+    if err != error.Error.None {
+        fmt.println("broblem")
+    }
+    state.scoreboard = board
+}
+
 // RENDER 
 
 
-render :: proc() {
+render :: proc()  {
     rl.BeginDrawing()
     rl.ClearBackground(rl.BLACK)
 
@@ -306,6 +347,7 @@ render_end :: proc () {
     rl.BeginDrawing()
     rl.ClearBackground(rl.BLACK)
 
+    draw_textbox()
     draw_score()
     draw_scoreboard()
     
@@ -330,7 +372,7 @@ draw_score :: proc() {
     rl.DrawText(time_msg, x, y + 45, 20, rl.WHITE)
 
     
-    rl.DrawText(fmt.ctprintf("Press ENTER to restart."), x, constant.SCREEN_SIZE.y - 30, 20, rl.WHITE)
+    rl.DrawText(fmt.ctprintf("Press R to restart."), x, constant.SCREEN_SIZE.y - 30, 20, rl.GRAY)
 }
 
 draw_scoreboard :: proc () {
@@ -339,11 +381,12 @@ draw_scoreboard :: proc () {
     offset := size + 5
 
     board_msg := fmt.ctprintf("Leaderboard")
+    board_size := size + 10
     rl.DrawText(
         board_msg, 
-        (constant.SCREEN_SIZE.x - rl.MeasureText(board_msg, size)) / 2 , 
+        (constant.SCREEN_SIZE.x - rl.MeasureText(board_msg, board_size)) / 2 , 
         constant.SCREEN_SIZE.y / 2, 
-        size, rl.WHITE,
+        board_size, rl.WHITE,
     )
 
     if len(state.scoreboard) <= 0 {
@@ -351,7 +394,7 @@ draw_scoreboard :: proc () {
         rl.DrawText(
             unavail_msg, 
             (constant.SCREEN_SIZE.x - rl.MeasureText(unavail_msg, size)) / 2, 
-            constant.SCREEN_SIZE.y / 2 + offset, 
+            constant.SCREEN_SIZE.y / 2 + offset + 10, 
             size, rl.GRAY,
         )
     }
@@ -359,10 +402,52 @@ draw_scoreboard :: proc () {
     for i in 0..<len(state.scoreboard) {
         score := state.scoreboard[i]
 
-        score_msg := fmt.ctprintf("%s | %d",score.name, score.score)
+        score_msg := fmt.ctprintf("%d | %s",score.score, score.name)
         x := (constant.SCREEN_SIZE.x - rl.MeasureText(score_msg, size)) / 2
-        y := constant.SCREEN_SIZE.y / 2 + offset * i32(i + 1)
+        y := constant.SCREEN_SIZE.y / 2 + offset * i32(i + 1) + 10
 
-        rl.DrawText(score_msg, x, y, size, rl.WHITE)
+        rl.DrawText(score_msg, x, y, size, name_color(score.name))
     }
+}
+
+name_color :: proc(name: string) -> rl.Color {
+    if string(name_buf[:name_len]) == name {
+        return rl.GOLD
+    }
+
+    return rl.WHITE
+}
+
+draw_textbox :: proc() {
+    box_width : f32 = 240
+    box_height : f32 = 40
+    x := (f32(constant.SCREEN_SIZE.x) - box_width) / 2
+    y := f32(constant.SCREEN_SIZE.y) / 2 - box_height - 40
+    box := rl.Rectangle{
+        x, 
+        y, 
+        box_width, 
+        box_height,
+    }
+    rl.DrawRectangleRec(box, rl.DARKGRAY)
+    rl.DrawRectangleLinesEx(box, 2, rl.WHITE)
+
+    // cstring view of the filled portion of the buffer
+    text := strings.clone_to_cstring(string(name_buf[:name_len]), context.temp_allocator)
+    rl.DrawText(text, i32(box.x) + 8, i32(box.y) + 10, 20, rl.WHITE if name_typable else rl.GRAY)
+
+    // blinking caret
+    if name_typable && (i32(rl.GetTime() * 2)) % 2 == 0 {
+        w := rl.MeasureText(text, 20)
+        rl.DrawText("_", i32(box.x) + 8 + w, i32(box.y) + 10, 20, rl.WHITE)
+    }
+
+
+    send_msg := fmt.ctprintf("Press Enter to send score." if name_typable else "Score sent!")
+    rl.DrawText(
+        send_msg,
+        (constant.SCREEN_SIZE.x - rl.MeasureText(send_msg, 20)) / 2,
+        i32(y + box_height + f32(10)),
+        20, rl.GRAY,
+    )
 }
