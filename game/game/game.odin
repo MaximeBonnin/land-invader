@@ -1,6 +1,5 @@
 package game
 
-import "vendor:sdl2/net"
 import rl "vendor:raylib"
 import "core:fmt"
 import "core:math/rand"
