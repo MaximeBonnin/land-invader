@@ -7,7 +7,18 @@ permissions:
   contents: write          # needed to create the release
 
 jobs:
-  release:
+  check-odin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}   # required to pull GitHub releases
+          release: latest                       # or: nightly
+      - run: odin check game -vet -strict-style -collection:http=game/libs/odin-http
+
+  release-odin:
+    needs: check-odin
     strategy:
       matrix:
         include:
@@ -34,3 +45,35 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: ${{ matrix.out }}
+
+  check-go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.3"
+      - run: go vet ./...
+      - run: go test ./...
+
+  build-go-image:
+      needs: check-go
+      runs-on: ubuntu-latest
+      permissions:
+        contents: read
+        packages: write
+      steps:
+        - uses: actions/checkout@v4
+
+        - uses: docker/login-action@v3
+          with:
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+        - uses: docker/build-push-action@v6
+          with:
+            push: true
+            tags: |
+              ghcr.io/maximebonnin/land-invader:latest
+              ghcr.io/maximebonnin/land-invader:${{ github.sha }}
