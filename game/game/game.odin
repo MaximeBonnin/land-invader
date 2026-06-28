@@ -338,22 +338,28 @@ draw_scoreboard :: proc () {
     size : i32 = 25
     offset := size + 5
 
-    score_msg := fmt.ctprintf("Leaderboard")
-    x := (constant.SCREEN_SIZE.x - rl.MeasureText(score_msg, size)) / 2
-    y := constant.SCREEN_SIZE.y / 2
-    rl.DrawText(score_msg, x, y, size, rl.WHITE)
+    board_msg := fmt.ctprintf("Leaderboard")
+    rl.DrawText(
+        board_msg, 
+        (constant.SCREEN_SIZE.x - rl.MeasureText(board_msg, size)) / 2 , 
+        constant.SCREEN_SIZE.y / 2, 
+        size, rl.WHITE
+    )
 
     if len(state.scoreboard) <= 0 {
-        score_msg := fmt.ctprintf("currently unavailable")
-        x := (constant.SCREEN_SIZE.x - rl.MeasureText(score_msg, size)) / 2
-        y := constant.SCREEN_SIZE.y / 2 + offset
-        rl.DrawText(score_msg, x, y, size, rl.GRAY)
+        unavail_msg := fmt.ctprintf("currently unavailable")
+        rl.DrawText(
+            unavail_msg, 
+            (constant.SCREEN_SIZE.x - rl.MeasureText(unavail_msg, size)) / 2, 
+            constant.SCREEN_SIZE.y / 2 + offset, 
+            size, rl.GRAY
+        )
     }
 
     for i in 0..<len(state.scoreboard) {
         score := state.scoreboard[i]
 
-        score_msg = fmt.ctprintf("%s | %d",score.name, score.score)
+        score_msg := fmt.ctprintf("%s | %d",score.name, score.score)
         x := (constant.SCREEN_SIZE.x - rl.MeasureText(score_msg, size)) / 2
         y := constant.SCREEN_SIZE.y / 2 + offset * i32(i + 1)
 
