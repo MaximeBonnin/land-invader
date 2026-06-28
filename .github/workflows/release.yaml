@@ -74,6 +74,8 @@ jobs:
         - uses: docker/build-push-action@v6
           with:
             push: true
+            build-args: |
+              VERSION=${{ github.ref_name }}
             tags: |
               ghcr.io/maximebonnin/land-invader:latest
-              ghcr.io/maximebonnin/land-invader:${{ github.sha }}
+              ghcr.io/maximebonnin/land-invader:${{ github.ref_name }}
