@@ -129,7 +129,7 @@ handle_game_over :: proc() {
         scoreboard.Score{
             name = "dev",
             score = state.score,
-        }
+        },
     )
 
     // get score
@@ -343,7 +343,7 @@ draw_scoreboard :: proc () {
         board_msg, 
         (constant.SCREEN_SIZE.x - rl.MeasureText(board_msg, size)) / 2 , 
         constant.SCREEN_SIZE.y / 2, 
-        size, rl.WHITE
+        size, rl.WHITE,
     )
 
     if len(state.scoreboard) <= 0 {
@@ -352,7 +352,7 @@ draw_scoreboard :: proc () {
             unavail_msg, 
             (constant.SCREEN_SIZE.x - rl.MeasureText(unavail_msg, size)) / 2, 
             constant.SCREEN_SIZE.y / 2 + offset, 
-            size, rl.GRAY
+            size, rl.GRAY,
         )
     }
 
